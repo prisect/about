@@ -295,7 +295,7 @@
     }
 
     #main {
-  padding-top: 160px;
+      padding-top: 0;
       opacity: 1;
       transition: opacity 0.4s ease;
     }
@@ -825,7 +825,7 @@ the final goal is to explore what happens when you combine large-scale informati
         <div class="sysinfo" id="sysinfo"></div>
 
         <footer>
-          &copy; 2025 prisect &middot; a low effort site by dima
+          &copy; 2026 prisect &middot; a low effort site by dima
         </footer>
       </div>
     </div>
@@ -887,7 +887,7 @@ window.addEventListener("load", () => {
     }
 
     function init() {
-      forceTop();
+      window.scrollTo(0, 0);
       const sid = generateSessionID();
       document.getElementById("sessionid").textContent = sid;
       document.getElementById("sticky-sessionid").textContent = sid;
