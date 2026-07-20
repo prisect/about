@@ -156,11 +156,21 @@
       width: 30px;
       height: 30px;
       border-radius: 50%;
+      position: absolute;
+      transition: left 0.15s ease, opacity 0.2s ease;
     }
 
     .sticky-name {
+      position: absolute;
       font-size: 16px;
       color: var(--text);
+      white-space: nowrap;
+      transition: opacity 0.2s ease;
+    }
+
+    .sticky-name.collapsed {
+      opacity: 0;
+      pointer-events: none;
     }
 
     .sticky-sessionid {
@@ -596,21 +606,21 @@ just people who build things because they actually want to understand how they w
             <img class="card-img" src="assets/nullcel.jpeg" alt="nullcel" />
             <div class="card-body">
               <div class="card-name">nullcel</div>
-              <div class="card-desc">low-level tooling</div>
+              <div class="card-desc">one brain organisation</div>
             </div>
           </a>
           <a class="card" href="https://src.eco">
             <img class="card-img" src="assets/dimanet.png" alt="the source" />
             <div class="card-body">
               <div class="card-name">the source</div>
-              <div class="card-desc">ecosystem</div>
+              <div class="card-desc">open source research</div>
             </div>
           </a>
-          <a class="card" href="https://auditplay.net">
+          <a class="card" href="https://dollarcel">
             <img class="card-img" src="assets/dollarnine.png" alt="audit network" />
             <div class="card-body">
-              <div class="card-name">audit network</div>
-              <div class="card-desc">security auditing</div>
+              <div class="card-name">dollarcel</div>
+              <div class="card-desc">self-prograting rootkit</div>
             </div>
           </a>
           <a class="card" href="#">
@@ -797,11 +807,42 @@ the final goal is to explore what happens when you combine large-scale informati
                     socials.classList.remove("hidden");
 
                     const subtitle = document.getElementById("subtitle");
+                    const stickyName = document.querySelector(".sticky-name");
+                    const stickySid = document.getElementById("sticky-sessionid");
+                    const stickyAvatar = document.querySelector(".sticky-avatar");
+                    const stickySocials = document.querySelector(".sticky-socials");
+
+                    function positionStickyItems() {
+                      const bar = stickyBar.getBoundingClientRect();
+                      const sr = stickySocials.getBoundingClientRect();
+                      const sessionR = stickySid.getBoundingClientRect();
+                      const midpoint = (sr.right + sessionR.left) / 2;
+                      const avatarLeft = midpoint - 15;
+                      stickyAvatar.style.left = avatarLeft + "px";
+                      stickyName.style.left = (midpoint + 20) + "px";
+                    }
+
+                    function checkStickyOverlap() {
+                      const nr = stickyName.getBoundingClientRect();
+                      const sr = stickySid.getBoundingClientRect();
+                      if (nr.right + 6 >= sr.left) {
+                        stickyName.classList.add("collapsed");
+                      } else {
+                        stickyName.classList.remove("collapsed");
+                      }
+                    }
+
+                    function updateSticky() {
+                      positionStickyItems();
+                      checkStickyOverlap();
+                    }
+
                     const observer = new IntersectionObserver((entries) => {
                       entries.forEach(entry => {
                         if (!entry.isIntersecting) {
                           stickyBar.classList.add("visible");
                           socials.classList.add("hidden");
+                          updateSticky();
                         } else {
                           stickyBar.classList.remove("visible");
                           socials.classList.remove("hidden");
@@ -809,6 +850,8 @@ the final goal is to explore what happens when you combine large-scale informati
                       });
                     }, { threshold: 0 });
                     observer.observe(subtitle);
+
+                    window.addEventListener("resize", updateSticky);
 
                     setTimeout(() => {
                       introEl.classList.add("gone");
