@@ -265,8 +265,31 @@
       opacity: 0;
     }
 
+    #intro-loading {
+      position: fixed;
+      top: calc(50% + 28px);
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 14px;
+      color: var(--muted);
+      z-index: 60;
+      opacity: 0.6;
+      transition: opacity 0.2s ease;
+    }
+
+    #intro-loading.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
     #main {
       padding-top: 0;
+      opacity: 1;
+      transition: opacity 0.4s ease;
+    }
+
+    #main.faded {
+      opacity: 0.3;
     }
 
     #main .inner {
@@ -281,6 +304,7 @@
       object-fit: cover;
       display: block;
       margin-bottom: 12px;
+      margin-top: -40px;
     }
 
     .wrap {
@@ -293,7 +317,7 @@
       display: block;
       text-align: center;
       margin-bottom: 0;
-      margin-top: 8px;
+      margin-top: -32px;
       white-space: pre;
     }
 
@@ -313,6 +337,15 @@
       display: inline-flex;
       align-items: center;
       line-height: 0;
+    }
+
+    #target-name {
+      opacity: 0;
+      transition: opacity 0.15s ease;
+    }
+
+    #target-name.visible {
+      opacity: 1;
     }
 
     .avatar {
@@ -488,10 +521,20 @@
       }
 
       #main {
-        padding-top: 40px;
+        padding-top: 80px;
+        margin-top: 0;
+      }
+
+      .wrap {
+        margin-top: 0;
+      }
+
+      #banner {
+        margin-top: 0;
       }
 
       #title {
+        margin-top: 8px;
         font-size: 13px;
       }
 
@@ -549,6 +592,7 @@
   </div>
 
   <span id="intro-name"><span id="intro-text"></span><span class="cursor"></span></span>
+  <div id="intro-loading">loading...</div>
 
   <div id="intro-overlay"></div>
 
@@ -619,6 +663,7 @@ just people who build things because they actually want to understand how they w
         </div>
 
         <div class="section-heading">projects</div>
+        <p>here are some of the projects i've worked on and currently workign on:</p>
 
         <div class="projects">
           <a class="card" href="https://vastsuite.com">
@@ -808,7 +853,7 @@ the final goal is to explore what happens when you combine large-scale informati
       }
     }
 
-    window.onload = () => {
+    function init() {
       window.scrollTo(0, 0);
       const sid = generateSessionID();
       document.getElementById("sessionid").textContent = sid;
@@ -821,6 +866,7 @@ the final goal is to explore what happens when you combine large-scale informati
       const target = document.getElementById("target-name");
       const socials = document.querySelector(".socials");
       const stickyBar = document.getElementById("sticky-bar");
+      const loading = document.getElementById("intro-loading");
 
       socials.classList.remove("visible");
 
@@ -828,8 +874,9 @@ the final goal is to explore what happens when you combine large-scale informati
       introCursor.classList.add("solid");
 
       typeIntro(textEl, "prisect", 0, 60, () => {
+        loading.classList.add("hidden");
         setTimeout(() => {
-          typeIntro(textEl, ".d", 0, 190, () => {
+          typeIntro(textEl, ".d", 0, 100, () => {
             setTimeout(() => {
               document.fonts.ready.then(() => {
                 requestAnimationFrame(() => {
@@ -841,8 +888,11 @@ the final goal is to explore what happens when you combine large-scale informati
                   introEl.style.fontSize = targetFontSize + "px";
                   introEl.style.transform = "translate(-50%, -50%)";
 
+                  main.classList.add("faded");
+
                   setTimeout(() => {
                     overlay.classList.add("hidden");
+                    main.classList.remove("faded");
                     main.classList.add("visible");
                     socials.classList.add("visible");
                     document.getElementById("sessionid").classList.add("visible");
@@ -897,15 +947,19 @@ the final goal is to explore what happens when you combine large-scale informati
 
                     setTimeout(() => {
                       introEl.classList.add("gone");
-                    }, 100);
-                  }, 260);
+                      setTimeout(() => {
+                        target.classList.add("visible");
+                      }, 80);
+                    }, 200);
+                  }, 100);
                 });
               });
-            }, 500);
+            }, 250);
           });
         }, 100);
       });
-    };
+    }
+    init();
   </script>
 </body>
 </html>
