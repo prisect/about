@@ -471,8 +471,10 @@
       text-align: left;
       transition: border-color 0.2s ease;
       overflow: hidden;
-      display: block;
+      display: flex;
+      flex-direction: column;
       color: inherit;
+      min-height: 100%;
     }
 
     .card:hover {
@@ -486,10 +488,15 @@
       object-fit: cover;
       display: block;
       background: #111;
+      flex-shrink: 0;
     }
 
     .card-body {
       padding: 14px 16px;
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      min-height: 0;
     }
 
     .card-name {
@@ -498,9 +505,58 @@
       margin-bottom: 4px;
     }
 
+    .tech-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: auto;
+      padding-top: 8px;
+    }
+
     .card-desc {
       font-size: 12px;
       color: var(--muted);
+    }
+
+    .tech-tag {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2px 6px;
+      border-radius: 0;
+      border: 1px solid rgba(255,255,255,0.18);
+      background: transparent;
+      color: var(--text);
+      font-size: 11px;
+      letter-spacing: 0.04em;
+      text-transform: none;
+      font-weight: 400;
+      line-height: 1;
+    }
+
+    .tech-tag.tag-ansi { border-color:#15407b; color:#99c1ff; }
+    .tech-tag.tag-c { border-color:#1d4c8b; color:#a3c9ff; }
+    .tech-tag.tag-cpp { border-color:#1f4b77; color:#accdff; }
+    .tech-tag.tag-organisation { border-color:#777777; color:#bbbbbb; }
+    .tech-tag.tag-html { border-color:#c63f1f; color:#ffb59a; }
+    .tech-tag.tag-css { border-color:#1f3dcc; color:#aac6ff; }
+    .tech-tag.tag-js { border-color:#d1b433; color:#fff5a0; }
+    .tech-tag.tag-typescript { border-color:#2f74c0; color:#b8d4f3; }
+    .tech-tag.tag-rust { border-color:#b0755e; color:#f0d5b6; }
+    .tech-tag.tag-python { border-color:#265a80; color:#b5d2f2; }
+    .tech-tag.tag-bevy { border-color:#543f8b; color:#c1b7f4; }
+    .tech-tag.tag-shadcn { border-color:#8a5df8; color:#d4c7ff; }
+    .tech-tag.tag-perl { border-color:#2f3f5d; color:#c0c8e3; }
+    .tech-tag.tag-bash { border-color:#3f7428; color:#c8e5a0; }
+    .tech-tag.tag-shell { border-color:#36454f; color:#cbd4db; }
+
+    .more-posts {
+      margin: 24px 0 0;
+      text-align: center;
+      font-size: 13px;
+      color: var(--muted);
+      letter-spacing: 0.04em;
+      text-transform: none;
     }
 
     .sysinfo {
@@ -682,41 +738,22 @@ if you're curious how things work, or how people do, you're in the right place. 
             <div class="card-body">
               <div class="card-name">vastdisk</div>
               <div class="card-desc">a file uploader, based on user privacy, built on zero-knowledge</div>
+              <div class="tech-tags">
+                <span class="tech-tag tag-typescript">typescript</span>
+                <span class="tech-tag tag-rust">rust</span>
+              </div>
             </div>
           </a>
-          <a class="card" href="https://nullcel.com">
-            <img class="card-img" src="assets/nullcel.jpeg" alt="nullcel" />
+          <a class="card" href="https://verv.page">
+            <img class="card-img" src="assets/preview.png" alt="myverve" />
             <div class="card-body">
-              <div class="card-name">nullcel</div>
-              <div class="card-desc">one brain organisation, making sophisticated software & solutions</div>
-            </div>
-          </a>
-          <a class="card" href="https://src.eco">
-            <img class="card-img" src="assets/dimanet.png" alt="the source" />
-            <div class="card-body">
-              <div class="card-name">the source</div>
-              <div class="card-desc">lightweight ANSI C library for feedforward neural networks </div>
-            </div>
-          </a>
-          <a class="card" href="https://dollarcel">
-            <img class="card-img" src="assets/dollarnine.png" alt="audit network" />
-            <div class="card-body">
-              <div class="card-name">dollarcel</div>
-              <div class="card-desc">self-propagating rootkit worm with C&C server capabilities</div>
-            </div>
-          </a>
-          <a class="card" href="https://davpfoundation.github.io/">
-            <img class="card-img" src="assets/davp.png" alt="davp" />
-            <div class="card-body">
-              <div class="card-name">davp</div>
-              <div class="card-desc">decentralized asset verification protocol</div>
-            </div>
-          </a>
-          <a class="card" href="#">
-            <img class="card-img" src="assets/mandelbrust.png" alt="mandelbrust" />
-            <div class="card-body">
-              <div class="card-name">mandelbrust</div>
-              <div class="card-desc">mandelbrot explorer in rust</div>
+              <div class="card-name">myverve</div>
+              <div class="card-desc">a platform that lets anyone create a clean, customizable personal page on the web in seconds</div>
+              <div class="tech-tags">
+                <span class="tech-tag tag-typescript">typescript</span>
+                <span class="tech-tag tag-rust">rust</span>
+                <span class="tech-tag tag-shadcn">shadcn</span>
+              </div>
             </div>
           </a>
           <a class="card" href="https://prisect.itch.io/scoper/">
@@ -724,15 +761,61 @@ if you're curious how things work, or how people do, you're in the right place. 
             <div class="card-body">
               <div class="card-name">scoper</div>
               <div class="card-desc">a hyperrealistic air traffic controller simulator. available on itch</div>
+              <div class="tech-tags">
+                <span class="tech-tag tag-rust">rust</span>
+                <span class="tech-tag tag-python">python</span>
+                <span class="tech-tag tag-bevy">bevy</span>
+              </div>
             </div>
           </a>
-          <a class="card" href="https://verv.page">
-            <img class="card-img" src="assets/preview.png" alt="myverve" />
+          <a class="card" href="https://src.eco">
+            <img class="card-img" src="assets/dimanet.png" alt="dimanet" />
             <div class="card-body">
-              <div class="card-name">myverve</div>
-              <div class="card-desc">a platform that lets anyone create a clean, customizable personal page on the web in seconds
-
-</div>
+              <div class="card-name">dimanet</div>
+              <div class="card-desc">lightweight ANSI C library for feedforward neural networks </div>
+              <div class="tech-tags">
+                <span class="tech-tag tag-ansi">ansi c</span>
+              </div>
+            </div>
+          </a>
+          <a class="card" href="https://dollarcel">
+            <img class="card-img" src="assets/dollarnine.png" alt="dollarnine" />
+            <div class="card-body">
+              <div class="card-name">dollarnine</div>
+              <div class="card-desc">self-propagating rootkit worm with C&C server capabilities</div>
+              <div class="tech-tags">
+                <span class="tech-tag tag-cpp">c++</span>
+              </div>
+            </div>
+          </a>
+          <a class="card" href="https://davpfoundation.github.io/">
+            <img class="card-img" src="assets/davp.png" alt="davp" />
+            <div class="card-body">
+              <div class="card-name">davp</div>
+              <div class="card-desc">decentralized asset verification protocol</div>
+              <div class="tech-tags">
+                <span class="tech-tag tag-rust">rust</span>
+              </div>
+            </div>
+          </a>
+          <a class="card" href="#">
+            <img class="card-img" src="assets/mandelbrust.png" alt="mandelbrust" />
+            <div class="card-body">
+              <div class="card-name">mandelbrust</div>
+              <div class="card-desc">mandelbrot explorer in rust</div>
+              <div class="tech-tags">
+                <span class="tech-tag tag-rust">rust</span>
+              </div>
+            </div>
+          </a>
+          <a class="card" href="https://nullcel.com">
+            <img class="card-img" src="assets/nullcel.jpeg" alt="nullcel" />
+            <div class="card-body">
+              <div class="card-name">nullcel</div>
+              <div class="card-desc">one brain organisation, making sophisticated software & solutions</div>
+              <div class="tech-tags">
+                <span class="tech-tag tag-organisation">organisation</span>
+              </div>
             </div>
           </a>
         </div>
@@ -822,6 +905,8 @@ the final goal is to explore what happens when you combine large-scale informati
             </div>
           </details>
         </div>
+
+        <div class="more-posts">more coming soon</div>
 
         <div class="sysinfo" id="sysinfo"></div>
 
