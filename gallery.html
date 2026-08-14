@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="description" content="dima" />
+  <meta name="keywords" content="dima, prisect" />
+  <meta name="author" content="@prisect" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>gallery</title>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Geist:wght@100..900&display=swap');
+
+    :root {
+      --bg: #000000;
+      --text: #fff;
+      --muted: #8e8e8e;
+      --light: #babdc4;
+      --pad: 18px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scrollbar-width: none;
+      background: #000;
+    }
+
+    html::-webkit-scrollbar {
+      display: none;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Geist Mono", monospace;
+      background: var(--bg);
+      color: var(--text);
+      position: relative;
+      overflow-x: hidden;
+      padding: 0;
+    }
+
+    a {
+      color: #5b9bd5;
+      text-decoration: underline;
+      text-decoration-color: rgba(91, 155, 213, 0.4);
+      text-underline-offset: 2px;
+    }
+
+    a:hover {
+      color: #7fb8e8;
+    }
+
+    .sub a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    #sessionid {
+      position: fixed;
+      top: 12px;
+      right: 12px;
+      font-size: 12px;
+      color: var(--muted);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    #sessionid.visible {
+      opacity: 1;
+    }
+
+    #sticky-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 0 var(--pad);
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      z-index: 200;
+      transform: translateY(-100%);
+      opacity: 0;
+      pointer-events: none;
+      transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease;
+    }
+
+    #sticky-bar.visible {
+      transform: translateY(0);
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .sticky-name {
+      position: absolute;
+      left: 16px;
+      font-size: 16px;
+      color: var(--text);
+      white-space: nowrap;
+    }
+
+    .sticky-sessionid {
+      position: absolute;
+      right: 10px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    #intro-overlay {
+      position: fixed;
+      inset: 0;
+      background: var(--bg);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 50;
+      transition: opacity 0.6s ease, visibility 0.6s ease;
+    }
+
+    #intro-overlay.hidden {
+      opacity: 0;
+      visibility: hidden;
+    }
+
+    #intro-loading {
+      position: fixed;
+      top: calc(50% + 28px);
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 14px;
+      color: var(--muted);
+      z-index: 60;
+      opacity: 0.6;
+      transition: opacity 0.6s ease;
+    }
+
+    #intro-loading.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    #main {
+      padding-top: 0;
+      opacity: 1;
+      transition: opacity 0.4s ease;
+    }
+
+    #main.faded {
+      opacity: 0.3;
+    }
+
+    .wrap {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 0 var(--pad);
+    }
+
+    #title {
+      display: block;
+      text-align: center;
+      margin-bottom: 8px;
+      margin-top: 28px;
+      font-size: 22px;
+      letter-spacing: 0.02em;
+    }
+
+    .sub {
+      font-size: 16px;
+      margin-bottom: 8px;
+      text-align: center;
+      color: var(--muted);
+    }
+
+    .controls {
+      display: flex;
+      gap: 10px;
+      margin: 24px 0 20px;
+      flex-wrap: wrap;
+    }
+
+    .controls input,
+    .controls select {
+      background: transparent;
+      border: 1px solid #222;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 14px;
+      padding: 8px 12px;
+      outline: none;
+      appearance: none;
+      -webkit-appearance: none;
+      border-radius: 0;
+    }
+
+    .controls input {
+      flex: 1;
+      min-width: 180px;
+    }
+
+    .controls input:focus,
+    .controls select:focus {
+      border-color: #444;
+    }
+
+    .controls select {
+      cursor: pointer;
+      background-image: linear-gradient(45deg, transparent 50%, var(--muted) 50%), linear-gradient(135deg, var(--muted) 50%, transparent 50%);
+      background-position: calc(100% - 16px) 55%, calc(100% - 11px) 55%;
+      background-size: 5px 5px;
+      background-repeat: no-repeat;
+      padding-right: 28px;
+    }
+
+    .controls select option {
+      background: #000;
+      color: var(--text);
+    }
+
+    .count {
+      font-size: 12px;
+      color: var(--muted);
+      margin: 0 0 16px;
+      letter-spacing: 0.04em;
+    }
+
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 10px;
+      width: 100%;
+    }
+
+    .g-item {
+      aspect-ratio: 1 / 1;
+      border: 1px solid #222;
+      background: #000;
+      overflow: hidden;
+      position: relative;
+      cursor: pointer;
+      transition: border-color 0.2s ease;
+    }
+
+    .g-item:hover {
+      border-color: #444;
+    }
+
+    .g-item img,
+    .g-item video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      background: #111;
+    }
+
+    .g-item .g-name {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      padding: 20px 10px 8px;
+      font-size: 11px;
+      color: var(--text);
+      background: linear-gradient(transparent, rgba(0, 0, 0, 0.85));
+      opacity: 0;
+      transition: opacity 0.2s ease;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      pointer-events: none;
+    }
+
+    .g-item:hover .g-name {
+      opacity: 1;
+    }
+
+    .g-item .g-badge {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      font-size: 10px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--muted);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      padding: 2px 6px;
+      background: rgba(0, 0, 0, 0.6);
+    }
+
+    .g-empty {
+      text-align: center;
+      color: var(--muted);
+      font-size: 14px;
+      padding: 48px 0;
+    }
+
+    footer {
+      margin-top: 48px;
+      padding: 24px 0;
+      text-align: center;
+      font-size: 12px;
+      color: var(--muted);
+      border-top: 1px solid #1a1a1a;
+    }
+
+    footer a {
+      color: var(--muted);
+    }
+
+    footer a:hover {
+      color: var(--light);
+    }
+
+    #lightbox {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.95);
+      z-index: 300;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.2s ease, visibility 0.2s ease;
+    }
+
+    #lightbox.open {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .lb-content {
+      max-width: 90vw;
+      max-height: 86vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .lb-content img,
+    .lb-content video {
+      max-width: 90vw;
+      max-height: 78vh;
+      object-fit: contain;
+      border: 1px solid #222;
+      background: #000;
+    }
+
+    .lb-meta {
+      margin-top: 12px;
+      display: flex;
+      gap: 12px;
+      align-items: baseline;
+    }
+
+    .lb-name {
+      color: var(--muted);
+      font-size: 12px;
+      max-width: 60vw;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .lb-count {
+      color: var(--muted);
+      font-size: 12px;
+      letter-spacing: 0.04em;
+    }
+
+    .lb-btn {
+      position: fixed;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: transparent;
+      border: 1px solid #222;
+      color: var(--text);
+      font-size: 18px;
+      cursor: pointer;
+      z-index: 310;
+      transition: border-color 0.2s ease, color 0.2s ease;
+    }
+
+    .lb-btn:hover {
+      border-color: #444;
+      color: var(--light);
+    }
+
+    .lb-prev { left: 16px; }
+    .lb-next { right: 16px; }
+
+    .lb-close {
+      position: fixed;
+      top: 16px;
+      right: 16px;
+      width: 40px;
+      height: 40px;
+      background: transparent;
+      border: 1px solid #222;
+      color: var(--text);
+      font-size: 16px;
+      cursor: pointer;
+      z-index: 310;
+      transition: border-color 0.2s ease, color 0.2s ease;
+    }
+
+    .lb-close:hover {
+      border-color: #444;
+      color: var(--light);
+    }
+
+    @media (max-width: 600px) {
+      :root {
+        --pad: 12px;
+      }
+
+      #title {
+        font-size: 18px;
+      }
+
+      .gallery-grid {
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: 6px;
+      }
+
+      .lb-prev { left: 6px; }
+      .lb-next { right: 6px; }
+    }
+  </style>
+</head>
+
+<body>
+  <div id="sticky-bar">
+    <span class="sticky-name">gallery</span>
+    <span class="sticky-sessionid" id="sticky-sessionid"></span>
+  </div>
+
+  <div id="intro-loading">loading...</div>
+
+  <div id="intro-overlay"></div>
+
+  <div id="main">
+    <div class="inner">
+      <div id="sessionid" class="g-sid"></div>
+
+      <div class="wrap">
+        <div id="title">gallery</div>
+        <div class="sub">images, gifs, videos</div>
+
+        <div class="controls">
+          <input type="text" id="search" placeholder="search..." autocomplete="off" spellcheck="false" />
+          <select id="sort">
+            <option value="newest">newest</option>
+            <option value="oldest">oldest</option>
+            <option value="name">name a-z</option>
+            <option value="name-rev">name z-a</option>
+            <option value="type">type</option>
+          </select>
+          <select id="type">
+            <option value="all">all</option>
+            <option value="image">images</option>
+            <option value="gif">gifs</option>
+            <option value="video">videos</option>
+          </select>
+        </div>
+
+        <div class="count" id="count"></div>
+
+        <div class="gallery-grid" id="grid"></div>
+        <div class="g-empty" id="empty" style="display:none">nothing here</div>
+
+        <footer>
+          <a href="index.html">home</a> &middot; &copy; 2026 prisect &middot; a low effort site by dima
+        </footer>
+      </div>
+    </div>
+  </div>
+
+  <div id="lightbox">
+    <button class="lb-close" id="lb-close">&times;</button>
+    <button class="lb-btn lb-prev" id="lb-prev">&larr;</button>
+    <button class="lb-btn lb-next" id="lb-next">&rarr;</button>
+    <div class="lb-content">
+      <div id="lb-media"></div>
+      <div class="lb-meta">
+        <span class="lb-name" id="lb-name"></span>
+        <span class="lb-count" id="lb-count"></span>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    if ('scrollRestoration' in history) {
+      history.scrollRestoration = 'manual';
+    }
+
+    function forceTop() {
+      window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+    }
+
+    forceTop();
+
+    window.addEventListener("load", () => {
+      forceTop();
+      setTimeout(forceTop, 100);
+      setTimeout(forceTop, 500);
+    });
+
+    function generateSessionID() {
+      const n = new Date();
+      const e = v => v.toString(36).toUpperCase();
+      const ts = e(Math.floor(n.getTime() / 1000));
+      const tz = e(n.getTimezoneOffset() + 780);
+      const scr = e(Math.round(screen.width / 10) * 500 + Math.round(screen.height / 10));
+      const dpr = Math.round(devicePixelRatio * 10);
+      const cd = screen.colorDepth / 8;
+      const cn = navigator.connection ? Math.round(navigator.connection.downlink * 10) : 0;
+      const misc = e(cd * 1000 + dpr * 10 + cn);
+      const ref = document.referrer ? e(Math.min(document.referrer.length, 46655)) : '0';
+      const rand = e(Math.floor(Math.random() * 46656));
+      const plat = (navigator.platform || '').slice(0, 2).toUpperCase();
+      const lng = (navigator.language || '').replace(/[^a-z]/gi, '').slice(0, 2).toUpperCase();
+      return ts + tz + scr + misc + ref + plat + lng + rand;
+    }
+
+    const FILES = [
+      ['imagesdf.png',134312015592027786],
+      ['IMG_4502.JPG',134312016382032353],
+      ['IMG_4504.JPG',134312016404643687],
+      ['IMG_5343.JPG',134312016366946167],
+      ['IMG_5344.JPG',134312016374771857],
+      ['IMG_5356.JPG',134312016389803583],
+      ['IMG_5541.PNG',134312016397691257],
+      ['IMG_5542.JPG',134312016420232867],
+      ['IMG_5543.PNG',134312016459592640],
+      ['IMG_5544.JPG',134312016437103779],
+      ['IMG_5545.JPG',134312016427037021],
+      ['IMG_5546.JPG',134312016444523861],
+      ['IMG_5547.PNG',134312016412330881],
+      ['IMG_5548.PNG',134312016452075910],
+      ['IMG_5549.JPG',134312016074622965],
+      ['IMG_5550.JPG',134312016090963028],
+      ['IMG_5551.JPG',134312016067601906],
+      ['IMG_5552.PNG',134312016104325245],
+      ['IMG_5553.PNG',134312016167668283],
+      ['IMG_5554.PNG',134312016240721310],
+      ['IMG_5555.JPG',134312016118531099],
+      ['IMG_5557.PNG',134312016182062213],
+      ['IMG_5558.PNG',134312016248597132],
+      ['IMG_5559.JPG',134312016189471191],
+      ['IMG_5560.PNG',134312016111498749],
+      ['IMG_5561.MP4',134312016263783908],
+      ['IMG_5562.JPG',134312016226721081],
+      ['IMG_5563.JPG',134312016233573123],
+      ['IMG_5564.JPG',134312016060666148],
+      ['IMG_5565.PNG',134312016053233409],
+      ['IMG_5566.PNG',134312016219170454],
+      ['IMG_5769.MP4',134312016270554263],
+      ['IMG_5770.PNG',134312016134565444],
+      ['IMG_5779.JPG',134312016205280279],
+      ['IMG_5780.JPG',134312016196697397],
+      ['IMG_5781.JPG',134312016046063853],
+      ['IMG_5782.JPG',134312016037310160],
+      ['IMG_5783.PNG',134312016029721433],
+      ['IMG_5784.PNG',134312016022974596],
+      ['IMG_5785.PNG',134312016175471696],
+      ['IMG_5786.PNG',134312016157394033],
+      ['IMG_5787.PNG',134312016150313515],
+      ['IMG_5802.PNG',134312016256388037],
+      ['IMG_5803.PNG',134312016097511979],
+      ['IMG_5804.JPG',134312016212525904],
+      ['IMG_5805.JPG',134312016015653236],
+      ['IMG_5806.PNG',134312016008654178],
+      ['IMG_5807.PNG',134312016001602668],
+      ['IMG_5808.PNG',134312015994199340],
+      ['IMG_5809.JPG',134312015986677115],
+      ['IMG_5810.PNG',134312015977922407],
+      ['IMG_5811.PNG',134312015956765830],
+      ['overnight_final.mp4',134312015662273431],
+      ['SUVI_Fe171_20260311T231242Z.png',134312015706142800],
+      ['video (1).mp4',134312016142096500],
+      ['video.mp4',134312016126406358]
+    ];
+
+    const VIDEOS = ['mp4', 'mov', 'webm', 'm4v', 'avi', 'ogg'];
+    const GIFS = ['gif'];
+
+    function fileType(name) {
+      const ext = name.split('.').pop().toLowerCase();
+      if (VIDEOS.includes(ext)) return 'video';
+      if (GIFS.includes(ext)) return 'gif';
+      return 'image';
+    }
+
+    const BASE = 'assets/gallery/';
+
+    let filtered = [];
+    const searchInput = document.getElementById('search');
+    const sortSelect = document.getElementById('sort');
+    const typeSelect = document.getElementById('type');
+    const grid = document.getElementById('grid');
+    const empty = document.getElementById('empty');
+    const count = document.getElementById('count');
+
+    const items = FILES.map((f, i) => ({
+      name: f[0],
+      ts: f[1],
+      type: fileType(f[0]),
+      i
+    }));
+
+    function apply() {
+      const q = searchInput.value.trim().toLowerCase();
+      const t = typeSelect.value;
+
+      filtered = items.filter(it =>
+        (t === 'all' || it.type === t) &&
+        (!q || it.name.toLowerCase().includes(q))
+      );
+
+      const s = sortSelect.value;
+      if (s === 'newest') filtered.sort((a, b) => b.ts - a.ts);
+      else if (s === 'oldest') filtered.sort((a, b) => a.ts - b.ts);
+      else if (s === 'name') filtered.sort((a, b) => a.name.localeCompare(b.name));
+      else if (s === 'name-rev') filtered.sort((a, b) => b.name.localeCompare(a.name));
+      else if (s === 'type') filtered.sort((a, b) =>
+        a.type === b.type ? a.name.localeCompare(b.name) : a.type.localeCompare(b.type)
+      );
+
+      render();
+    }
+
+    function mediaEl(it, large) {
+      const src = BASE + it.name;
+      if (it.type === 'video') {
+        const v = document.createElement('video');
+        v.src = src;
+        if (large) {
+          v.controls = true;
+          v.autoplay = true;
+        } else {
+          v.muted = true;
+          v.loop = true;
+          v.playsInline = true;
+          v.preload = 'metadata';
+        }
+        return v;
+      }
+      const img = document.createElement('img');
+      img.src = src;
+      if (!large) img.loading = 'lazy';
+      img.alt = it.name;
+      return img;
+    }
+
+    function render() {
+      grid.innerHTML = '';
+      count.textContent = filtered.length + (filtered.length === 1 ? ' item' : ' items');
+      empty.style.display = filtered.length ? 'none' : 'block';
+
+      filtered.forEach(it => {
+        const el = document.createElement('div');
+        el.className = 'g-item';
+
+        const m = mediaEl(it, false);
+        el.appendChild(m);
+
+        if (it.type !== 'image') {
+          const badge = document.createElement('span');
+          badge.className = 'g-badge';
+          badge.textContent = it.type;
+          el.appendChild(badge);
+        }
+
+        if (it.type === 'video') {
+          el.addEventListener('mouseenter', () => m.play().catch(() => {}));
+          el.addEventListener('mouseleave', () => m.pause());
+        }
+
+        const name = document.createElement('span');
+        name.className = 'g-name';
+        name.textContent = it.name;
+        el.appendChild(name);
+
+        el.addEventListener('click', () => openLightbox(it.i));
+        grid.appendChild(el);
+      });
+    }
+
+    let current = -1;
+
+    function openLightbox(index) {
+      current = index;
+      updateLightbox();
+      document.getElementById('lightbox').classList.add('open');
+    }
+
+    function updateLightbox() {
+      const it = items[current];
+      if (!it) return;
+      const box = document.getElementById('lb-media');
+      box.innerHTML = '';
+      box.appendChild(mediaEl(it, true));
+      document.getElementById('lb-name').textContent = it.name;
+      document.getElementById('lb-count').textContent = (current + 1) + ' / ' + items.length;
+    }
+
+    function closeLightbox() {
+      document.getElementById('lightbox').classList.remove('open');
+      document.getElementById('lb-media').innerHTML = '';
+    }
+
+    function step(dir) {
+      const next = (current + dir + items.length) % items.length;
+      openLightbox(next);
+    }
+
+    document.getElementById('lb-close').addEventListener('click', closeLightbox);
+    document.getElementById('lb-prev').addEventListener('click', () => step(-1));
+    document.getElementById('lb-next').addEventListener('click', () => step(1));
+
+    document.addEventListener('keydown', e => {
+      if (!document.getElementById('lightbox').classList.contains('open')) return;
+      if (e.key === 'Escape') closeLightbox();
+      else if (e.key === 'ArrowLeft') step(-1);
+      else if (e.key === 'ArrowRight') step(1);
+    });
+
+    searchInput.addEventListener('input', apply);
+    sortSelect.addEventListener('change', apply);
+    typeSelect.addEventListener('change', apply);
+
+    function init() {
+      window.scrollTo(0, 0);
+      const sid = generateSessionID();
+      document.getElementById("sessionid").textContent = sid;
+      document.getElementById("sticky-sessionid").textContent = sid;
+
+      const overlay = document.getElementById("intro-overlay");
+      const main = document.getElementById("main");
+      const loading = document.getElementById("intro-loading");
+      const stickyBar = document.getElementById("sticky-bar");
+      const sessionEl = document.getElementById("sessionid");
+      let sessionShown = false;
+
+      main.classList.add("faded");
+
+      setTimeout(() => {
+        overlay.classList.add("hidden");
+        loading.classList.add("hidden");
+        main.classList.remove("faded");
+        main.classList.add("visible");
+        sessionEl.classList.add("visible");
+        sessionShown = true;
+      }, 300);
+
+      const title = document.getElementById("title");
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          const showSticky = !entry.isIntersecting;
+          stickyBar.classList.toggle("visible", showSticky);
+          if (sessionShown) {
+            sessionEl.classList.toggle("visible", !showSticky);
+          }
+        });
+      }, { threshold: 0 });
+      observer.observe(title);
+
+      apply();
+    }
+
+    init();
+  </script>
+</body>
+</html>
