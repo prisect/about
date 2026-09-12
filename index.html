@@ -264,7 +264,7 @@
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      transition: top 0.4s ease, left 0.4s ease, font-size 0.4s ease, transform 0.2s ease, opacity 1s ease;
+      transition: opacity 0.25s ease;
       z-index: 60;
       white-space: nowrap;
     }
@@ -320,6 +320,74 @@
   margin-top: calc(-1 * env(safe-area-inset-top));
   padding-top: env(safe-area-inset-top);
 }
+
+    .banner-shell {
+      position: relative;
+      width: 100%;
+      min-height: calc(160px + env(safe-area-inset-top));
+      display: block;
+      background: #111;
+      overflow: visible;
+    }
+
+    .banner-shell::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: -72px;
+      height: 72px;
+      background-image:
+        linear-gradient(to top, rgba(0, 0, 0, 0.9), rgba(0, 0, 0, 0)),
+        url("assets/banner.jpg");
+      background-size: cover;
+      background-position: center bottom;
+      opacity: 0.24;
+      filter: blur(0.5px) saturate(0.8);
+      pointer-events: none;
+    }
+
+    .banner-loading {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0, 0, 0, 0.45);
+      z-index: 2;
+      transition: opacity 0.2s ease, visibility 0.2s ease;
+    }
+
+    .banner-loading.hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .banner-loading.failed {
+      background: rgba(0, 0, 0, 0.7);
+    }
+
+    .spinner {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      border-top-color: rgba(255, 255, 255, 0.9);
+      animation: spin 0.8s linear infinite;
+    }
+
+    .banner-loading.failed .spinner {
+      border-top-color: rgba(255, 255, 255, 0.25);
+      border-color: rgba(255, 255, 255, 0.25);
+      animation: none;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
 
     .wrap {
       max-width: 720px;
@@ -659,14 +727,17 @@
     <span class="sticky-sessionid" id="sticky-sessionid"></span>
   </div>
 
-  <span id="intro-name"><span id="intro-text"></span><span class="cursor"></span></span>
+  <span id="intro-name">prisect.d</span>
   <div id="intro-loading">loading...</div>
 
   <div id="intro-overlay"></div>
 
   <div id="main">
     <div class="inner">
-      <img id="banner" src="assets/banner.jpg" alt="" />
+      <div class="banner-shell">
+        <img id="banner" src="assets/banner.jpg" alt="" />
+        <div class="banner-loading" id="banner-loading"><span class="spinner"></span></div>
+      </div>
 
       <div class="toolbar">
         <div class="socials" id="main-socials">
@@ -739,6 +810,8 @@ if you're curious how things work, or how people do, you're in the right place. 
               <div class="card-name">vastdisk</div>
               <div class="card-desc">a file uploader, based on user privacy, built on zero-knowledge</div>
               <div class="tech-tags">
+                <span class="tech-tag tag-html">html</span>
+                <span class="tech-tag tag-css">css</span>
                 <span class="tech-tag tag-typescript">typescript</span>
                 <span class="tech-tag tag-rust">rust</span>
               </div>
@@ -795,6 +868,17 @@ if you're curious how things work, or how people do, you're in the right place. 
               <div class="card-desc">decentralized asset verification protocol</div>
               <div class="tech-tags">
                 <span class="tech-tag tag-rust">rust</span>
+              </div>
+            </div>
+          </a>
+          <a class="card" href="#">
+            <img class="card-img" src="assets/fusil.png" alt="fusil" />
+            <div class="card-body">
+              <div class="card-name">fusil</div>
+              <div class="card-desc">coming soon</div>
+              <div class="tech-tags">
+                <span class="tech-tag tag-c">docker</span>
+                <span class="tech-tag tag-c">c</span>
               </div>
             </div>
           </a>
@@ -979,104 +1063,92 @@ window.addEventListener("load", () => {
       document.getElementById("sticky-sessionid").textContent = sid;
 
       const introEl = document.getElementById("intro-name");
-      const textEl = document.getElementById("intro-text");
       const overlay = document.getElementById("intro-overlay");
       const main = document.getElementById("main");
       const target = document.getElementById("target-name");
       const socials = document.querySelector(".socials");
       const stickyBar = document.getElementById("sticky-bar");
       const loading = document.getElementById("intro-loading");
+      const banner = document.getElementById("banner");
+      const bannerLoading = document.getElementById("banner-loading");
 
       socials.classList.remove("visible");
 
-      const introCursor = introEl.querySelector(".cursor");
-      introCursor.classList.add("solid");
+      const markBannerLoaded = () => {
+        bannerLoading.classList.add("hidden");
+      };
 
-      typeIntro(textEl, "prisect", 0, 60, () => {
+      const markBannerFailed = () => {
+        bannerLoading.classList.remove("hidden");
+        bannerLoading.classList.add("failed");
+      };
+
+      banner.addEventListener("load", markBannerLoaded);
+      banner.addEventListener("error", markBannerFailed);
+
+      if (banner.complete && banner.naturalWidth) {
+        markBannerLoaded();
+      } else if (banner.complete && !banner.naturalWidth) {
+        markBannerFailed();
+      }
+
+      setTimeout(() => {
+        overlay.classList.add("hidden");
         loading.classList.add("hidden");
-        setTimeout(() => {
-          typeIntro(textEl, ".d", 0, 100, () => {
-            setTimeout(() => {
-              document.fonts.ready.then(() => {
-                requestAnimationFrame(() => {
-                  const tr = target.getBoundingClientRect();
-                  const targetFontSize = parseFloat(getComputedStyle(target).fontSize);
+        main.classList.remove("faded");
+        main.classList.add("visible");
+        socials.classList.add("visible");
+        document.getElementById("sessionid").classList.add("visible");
+        introEl.classList.add("gone");
+        target.classList.add("visible");
 
-                  introEl.style.top = (tr.top + tr.height / 2) + "px";
-                  introEl.style.left = (tr.left + tr.width / 2) + "px";
-                  introEl.style.fontSize = targetFontSize + "px";
-                  introEl.style.transform = "translate(-50%, -50%)";
+        const subtitle = document.getElementById("subtitle");
+        const stickyName = document.querySelector(".sticky-name");
+        const stickySid = document.getElementById("sticky-sessionid");
+        const stickyAvatar = document.querySelector(".sticky-avatar");
+        const stickySocials = document.querySelector(".sticky-socials");
 
-                  main.classList.add("faded");
+        function positionStickyItems() {
+          const bar = stickyBar.getBoundingClientRect();
+          const sr = stickySocials.getBoundingClientRect();
+          const sessionR = stickySid.getBoundingClientRect();
+          const midpoint = (sr.right + sessionR.left) / 2;
+          const avatarLeft = midpoint - 15;
+          stickyAvatar.style.left = avatarLeft + "px";
+          stickyName.style.left = (midpoint + 20) + "px";
+        }
 
-                  setTimeout(() => {
-                    overlay.classList.add("hidden");
-                    main.classList.remove("faded");
-                    main.classList.add("visible");
-                    socials.classList.add("visible");
-                    document.getElementById("sessionid").classList.add("visible");
-                    introCursor.classList.remove("solid");
+        function checkStickyOverlap() {
+          const nr = stickyName.getBoundingClientRect();
+          const sr = stickySid.getBoundingClientRect();
+          if (nr.right + 6 >= sr.left) {
+            stickyName.classList.add("collapsed");
+          } else {
+            stickyName.classList.remove("collapsed");
+          }
+        }
 
-                    const subtitle = document.getElementById("subtitle");
-                    const stickyName = document.querySelector(".sticky-name");
-                    const stickySid = document.getElementById("sticky-sessionid");
-                    const stickyAvatar = document.querySelector(".sticky-avatar");
-                    const stickySocials = document.querySelector(".sticky-socials");
+        function updateSticky() {
+          positionStickyItems();
+          checkStickyOverlap();
+        }
 
-                    function positionStickyItems() {
-                      const bar = stickyBar.getBoundingClientRect();
-                      const sr = stickySocials.getBoundingClientRect();
-                      const sessionR = stickySid.getBoundingClientRect();
-                      const midpoint = (sr.right + sessionR.left) / 2;
-                      const avatarLeft = midpoint - 15;
-                      stickyAvatar.style.left = avatarLeft + "px";
-                      stickyName.style.left = (midpoint + 20) + "px";
-                    }
-
-                    function checkStickyOverlap() {
-                      const nr = stickyName.getBoundingClientRect();
-                      const sr = stickySid.getBoundingClientRect();
-                      if (nr.right + 6 >= sr.left) {
-                        stickyName.classList.add("collapsed");
-                      } else {
-                        stickyName.classList.remove("collapsed");
-                      }
-                    }
-
-                    function updateSticky() {
-                      positionStickyItems();
-                      checkStickyOverlap();
-                    }
-
-                    const observer = new IntersectionObserver((entries) => {
-                      entries.forEach(entry => {
-                        if (!entry.isIntersecting) {
-                          stickyBar.classList.add("visible");
-                          socials.classList.remove("visible");
-                          updateSticky();
-                        } else {
-                          stickyBar.classList.remove("visible");
-                          socials.classList.add("visible");
-                        }
-                      });
-                    }, { threshold: 0 });
-                    observer.observe(subtitle);
-
-                    window.addEventListener("resize", updateSticky);
-
-                    setTimeout(() => {
-                      introEl.classList.add("gone");
-                      setTimeout(() => {
-                        target.classList.add("visible");
-                      }, 80);
-                    }, 200);
-                  }, 100);
-                });
-              });
-            }, 250);
+        const observer = new IntersectionObserver((entries) => {
+          entries.forEach(entry => {
+            if (!entry.isIntersecting) {
+              stickyBar.classList.add("visible");
+              socials.classList.remove("visible");
+              updateSticky();
+            } else {
+              stickyBar.classList.remove("visible");
+              socials.classList.add("visible");
+            }
           });
-        }, 100);
-      });
+        }, { threshold: 0 });
+        observer.observe(subtitle);
+
+        window.addEventListener("resize", updateSticky);
+      }, 100);
     }
     init();
   </script>
